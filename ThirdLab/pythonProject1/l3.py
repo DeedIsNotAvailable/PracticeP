@@ -2,30 +2,55 @@ import numpy as np
 from scipy.linalg import lu
 from scipy import stats
 
-A = np.array([[4, 3],
-              [6, 3]])
+def pretty_print_matrixP(matrix):
+    for row in matrix:
+        print(" ".join(f"{int(x) if x.is_integer() else x:.2f}" for x in row))
+
+## задание 1
+
+A = np.array([[2, -5, 1, 0],
+            [1, -1, -13, 0],
+            [3, -2, -2, -4],
+            [4, 0, 2.7, -1.3]])
+
+## задание 2
+
 P, L, U = lu(A)
 
-print("Преобразованная матрица P:")
-print(P)
-print("\nМатрица L:")
-print(L)
-print("\nМатрица U:")
-print(U)
+print("Матрица P:") # перестановочная матрица
+pretty_print_matrixP(P)
 
-det_L = np.linalg.det(L)
-det_U = np.linalg.det(U)
+print("\nМатрица L:") # нижняя треугольная матрица
+pretty_print_matrixP(L)
 
-det_A = det_L * det_U
-print(det_A)
+print("\nМатрица U:") # верхняя треугольна
+pretty_print_matrixP(U)
 
-uniform_sample = np.random.randint(0, 100, 100)
-normal_sample = np.random.normal(50, 10, 100)
-normal_sample = np.clip(normal_sample, 0, 100).astype(int)
+#pretty_print_matrixP(P @ L @ U) # проверка
 
-print("Выборка с равномерным распределением:", uniform_sample)
-print("Выборка с нормальным распределением:", normal_sample)
+## задание 3
 
+detP = np.linalg.det(P)
+detPinv = 1 / detP
+detU = np.prod(np.diag(U))
+detL = np.prod(np.diag(L))
+
+detA = detL * detU * detPinv
+
+print("\nОпределитель:")
+print(detA)
+
+## задание 4
+
+RavS = np.random.randint(0, 100, 100).astype(int)
+
+NorS = np.random.normal(50, 10, 100)
+NorS = np.clip(NorS, 0, 100).astype(int)
+
+print("\nВыборка с равномерным распределением:", RavS)
+print("\nВыборка с нормальным распределением:", NorS)
+
+## задание 5
 
 def compute_statistics(sample):
     mean = np.mean(sample)
@@ -38,46 +63,58 @@ def compute_statistics(sample):
 
     return mean, mode, modeA, median, minimum, maximum, std_dev
 
-uniform_stats = compute_statistics(uniform_sample)
-normal_stats = compute_statistics(normal_sample)
+RavStats = compute_statistics(RavS)
+NorStats = compute_statistics(NorS)
 
-print("Статистика для выборки с равномерным распределением:")
-print(f"Среднее: {uniform_stats[0]}")
-print(f"Мода: {uniform_stats[1]} и количество {uniform_stats[2]}")
-print(f"Медиана: {uniform_stats[3]}")
-print(f"Минимум: {uniform_stats[4]}")
-print(f"Максимум: {uniform_stats[5]}")
-print(f"Стандартное отклонение: {uniform_stats[6]}")
+print("\nСтатистика для выборки с равномерным распределением:")
+print(f"Среднее: {RavStats[0]}")
+print(f"Мода: {RavStats[1]} количество {RavStats[2]}")
+print(f"Медиана: {RavStats[3]}")
+print(f"Минимум: {RavStats[4]}")
+print(f"Максимум: {RavStats[5]}")
+print(f"Стандартное отклонение: {RavStats[6]}")
 
 print("\nСтатистика для выборки с нормальным распределением:")
-print(f"Среднее: {normal_stats[0]}")
-print(f"Мода: {normal_stats[1]} и количество {normal_stats[2]}")
-print(f"Медиана: {normal_stats[3]}")
-print(f"Минимум: {normal_stats[4]}")
-print(f"Максимум: {normal_stats[5]}")
-print(f"Стандартное отклонение: {normal_stats[6]}")
+print(f"Среднее: {NorStats[0]}")
+print(f"Мода: {NorStats[1]} количество {NorStats[2]}")
+print(f"Медиана: {NorStats[3]}")
+print(f"Минимум: {NorStats[4]}")
+print(f"Максимум: {NorStats[5]}")
+print(f"Стандартное отклонение: {NorStats[6]}")
 
-observed_counts = np.bincount(uniform_sample, minlength=100)
-expected_counts = np.full(100, len(uniform_sample) / 100)
-chi2_statistic, p_value = stats.chisquare(observed_counts, f_exp=expected_counts)
+##задание 6
+
+print("\n Равномерное распределение")
+
+num_bins = 10 #количество интервалов
+
+oc, bin_edges = np.histogram(RavS, bins=num_bins, range=(0, 100)) # разделение выборки на интервалы
+ec = np.full(num_bins, len(RavS) / num_bins) #ожидаемые частоты
+
+chi2_statistic, p_value = stats.chisquare(oc, ec) # вычисление p-value с помощью критерия хи-квадрат
 
 
-print(f"Статистика хи-квадрат: {chi2_statistic}")
+print(f"\nh-квадрат: {chi2_statistic}")
 print(f"p-value: {p_value}")
 
 if p_value < 0.05:
-    print("Отвергаем нулевую гипотезу: распределение выборки не равномерное.")
+    print("\nраспределение неравномерное")
 else:
-    print("Нет оснований для отвержения нулевой гипотезы: распределение выборки равномерное.")
+    print("\nраспределение равномерное")
 
-observed_counts = np.bincount(normal_sample, minlength=100)
-expected_counts = np.full(100, len(normal_sample) / 100)
-chi2_statistic, p_value = stats.chisquare(observed_counts, f_exp=expected_counts)
 
-print(f"Статистика хи-квадрат: {chi2_statistic}")
+print("\n Нормальное распределение")
+
+oc, bin_edges = np.histogram(NorS, bins=num_bins, range=(0, 100)) # разделение выборки на интервалы
+ec = np.full(num_bins, len(NorS) / num_bins) #ожидаемые частоты
+
+chi2_statistic, p_value = stats.chisquare(oc, ec) # вычисление p-value с помощью критерия хи-квадрат
+
+
+print(f"\nh-квадрат: {chi2_statistic}")
 print(f"p-value: {p_value}")
 
 if p_value < 0.05:
-    print("Отвергаем нулевую гипотезу: распределение выборки не равномерное.")
+    print("\nраспределение неравномерное")
 else:
-    print("Нет оснований для отвержения нулевой гипотезы: распределение выборки равномерное.")
+    print("\nраспределение равномерное")
