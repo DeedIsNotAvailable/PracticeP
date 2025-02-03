@@ -1,37 +1,52 @@
 import math
 import numpy
 import scipy
-import sympy as sp
-from sympy.stats.sampling.sample_scipy import scipy
+import sympy
+from sympy.stats.sampling.sample_numpy import numpy
 
 
 # вариант 2
 
+## задание 1
 def f(x):
     return math.log(math.sqrt(x))
 x0 = 2.0
+
 firDir = scipy.misc.derivative(f, x0, dx=1e-6)
 secDir = scipy.misc.derivative(f, x0, n=2, dx=1e-6)
-print(f"первая производная {firDir}")
-print(f"вторая производная {secDir}")
+print(f"первая производная: {firDir}")
+print(f"вторая производная: {secDir}")
 
-Symbol = sp.symbols('x')
-Func = sp.ln(sp.sqrt(Symbol))
-FuncDir = Func.diff(Symbol)
+## задание 2
+Symbol = sympy.symbols('x')
+Func = sympy.ln(sympy.sqrt(Symbol))
+FuncDir = sympy.diff(Func, Symbol)
 print(f"функция: {Func}")
 print(f"первая производная: {FuncDir}")
 
-diapoz = numpy.linspace(1, 6, 1000)
-Func2 = numpy.log(numpy.sqrt(diapoz))
-integral = scipy.integrate.trapezoid(Func2, diapoz)
-print(f"интеграл равен: {integral}")
+## задание 3
+a = 1
+b = 6
+n = 1000
 
-integralNeopr = sp.integrate(Func, Symbol)
-print(f"неопределенный интеграл равен: {integralNeopr} + C")
+Range = numpy.linspace(a, b, n) # множество разбиение
+FuncOnARange = numpy.log(numpy.sqrt(Range)) # множество значений функций
+Integral = scipy.integrate.trapezoid(FuncOnARange, Range)
 
-def objective_func(vars):
+#integral = scipy.integrate.quad(f, a, b)
+
+print(f"интеграл равен: {Integral}")
+
+## задание 4
+
+integralN = sympy.integrate(Func, Symbol)
+print(f"неопределенный интеграл равен: {integralN} + C")
+
+## задание 5
+
+def сfunc(vars):
     x, y = vars
-    return (x - 3)**2 + y
+    return (x - 3)**2 + (y - 1)**2
 
 def constraint(vars):
     x, y = vars
@@ -41,17 +56,17 @@ def constraint2(vars):
     x, y = vars
     return 3*y - 10
 
-initial_guess = [0, 0]
+iguess = [0, 0]
 
 constraints = [
     {'type': 'ineq', 'fun': constraint},
     {'type': 'ineq', 'fun': constraint2},
 ]
 
-result = scipy.optimize.minimize(objective_func, initial_guess, constraints=constraints)
+result = scipy.optimize.minimize(сfunc, iguess, constraints=constraints)
 
 if result.success:
-    print("Оптимальное значение переменных:", result.x)
-    print("Минимальное значение целевой функции:", result.fun)
+    print("птимальное значение переменных:", result.x)
+    print("инимальное значение целевой функции:", result.fun)
 else:
-    print("Оптимизация не удалась")
+    print("птимизация не удалась")
